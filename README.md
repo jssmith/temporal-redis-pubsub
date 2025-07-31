@@ -15,17 +15,14 @@ This project demonstrates how to implement real-time streaming from Temporal wor
 
 ## Requirements
 
-- anthropic
-- python-dotenv
-- UV package manager (for dependency management)
-- Python 3.10+
-- Redis server
-- Temporal server
+- Anthropic API key
+- [uv](https://docs.astral.sh/uv/) [Python project manager]
+- Redis server (e.g. `brew install redis`)
+- [Temporal server](https://docs.temporal.io/cli#install)
 
 ## Installation
 
 ```bash
-# Install dependencies with UV
 uv sync
 ```
 
