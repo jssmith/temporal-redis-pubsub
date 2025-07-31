@@ -6,7 +6,7 @@ import redis.asyncio as redis
 from temporalio.client import Client
 from dotenv import load_dotenv
 from workflows import LLMStreamingWorkflow
-from shared import TASK_QUEUE
+from shared import TASK_QUEUE, LLMInput
 
 # Load environment variables
 load_dotenv()
@@ -103,7 +103,7 @@ async def main():
             LLMStreamingWorkflow.run,
             id=workflow_id,
             task_queue=TASK_QUEUE,
-            args=[prompt, channel, "claude-3-7-sonnet-20250219"]
+            args=[LLMInput(prompt=prompt, channel=channel, model="claude-3-7-sonnet-20250219")],
         )
     )
     
