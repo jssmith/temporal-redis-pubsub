@@ -25,12 +25,6 @@ This project demonstrates how to implement real-time streaming from Temporal wor
 ## Installation
 
 ```bash
-# Create a virtual environment using UV (recommended)
-uv venv
-
-# Activate the virtual environment
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
 # Install dependencies with UV
 uv sync
 ```
@@ -49,12 +43,12 @@ temporal server start-dev # Open the Temporal UI on localhost:8233
 
 3. Start the Worker from the original virtual environment:
 ```bash
-python worker.py
+uv run python -m worker
 ```
 
 4. Start the Workflow from a new terminal with the virtual environment
 ```bash
-python starter.py
+uv run python -m starter
 ```
 
 ## Contributing
