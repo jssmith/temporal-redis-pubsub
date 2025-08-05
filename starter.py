@@ -48,10 +48,11 @@ async def listen_to_pubsub(channel: str):
                     # Process chunk - only print the new chunk
                     if "chunk" in data:
                         chunk = data["chunk"]
-                        # Print the chunk without any carriage returns
+                        # Print character by character for smoother streaming
                         for char in chunk:
                             print(char, end="", flush=True)
                             await asyncio.sleep(.01)
+                        
                         # Check for completion
                         if data.get("is_final", False):
                             print("\n" + "-" * 40)
@@ -101,13 +102,15 @@ async def main():
         )
     )
     
-    # Wait for either task to complete (prevents deadlock)
-    done, pending = await asyncio.wait(
-        [listener_task, workflow_task], return_when=asyncio.FIRST_COMPLETED
-    )
-
-    # Get the workflow result
+    # First, wait for the workflow to complete (ensures no deadlock)
     result = await workflow_task
+    
+    # Now wait for listener to finish displaying (with timeout as safety) - this allows the output to finish displaying before the workflow completes
+    try:
+        await asyncio.wait_for(listener_task, timeout=10.0)
+    except asyncio.TimeoutError:
+        print("\nListener timed out - cancelling...")
+        listener_task.cancel()
     
     print(f"\nWorkflow execution complete. Result length: {len(result)} characters")
 
