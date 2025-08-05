@@ -1,12 +1,14 @@
 import asyncio
-import os
 import json
+import os
 import uuid
+
 import redis.asyncio as redis
-from temporalio.client import Client
 from dotenv import load_dotenv
+from temporalio.client import Client
+
+from shared import TASK_QUEUE, LLMInput
 from workflows import LLMStreamingWorkflow
-from shared import TASK_QUEUE
 
 # Load environment variables
 load_dotenv()
@@ -15,7 +17,7 @@ load_dotenv()
 FIXED_CHANNEL = "claude-stream-channel"
 
 # Listen to Redis PubSub channel and print each chunk as it arrives
-async def listen_to_pubsub(channel: str) -> str:
+async def listen_to_pubsub(channel: str):
     # Connect to Redis
     redis_client = await redis.Redis(
         host=os.getenv("REDIS_HOST", "localhost"),
@@ -32,8 +34,6 @@ async def listen_to_pubsub(channel: str) -> str:
         print("Streaming response from Claude 3.7 Sonnet:")
         print("-" * 40)
         
-        final_output = ""
-        
         # Process messages as they arrive
         async for message in pubsub.listen():
             if message["type"] == "message":
@@ -43,7 +43,7 @@ async def listen_to_pubsub(channel: str) -> str:
                     # Check for error
                     if "error" in data:
                         print(f"\nError: {data['error']}")
-                        return ""
+                        raise Exception(data['error'])
                     
                     # Process chunk - only print the new chunk
                     if "chunk" in data:
@@ -51,17 +51,10 @@ async def listen_to_pubsub(channel: str) -> str:
                         # Print the chunk without any carriage returns
                         print(chunk, end="", flush=True)
                         
-                        # Keep track of the complete response
-                        if "accumulated" in data:
-                            final_output = data["accumulated"]
-                        else:
-                            final_output += chunk
-                        
                         # Check for completion
                         if data.get("is_final", False):
                             print("\n" + "-" * 40)
                             await pubsub.unsubscribe()
-                            return final_output
                 
                 except json.JSONDecodeError:
                     print(f"\nReceived invalid JSON: {message['data']}")
@@ -103,13 +96,13 @@ async def main():
             LLMStreamingWorkflow.run,
             id=workflow_id,
             task_queue=TASK_QUEUE,
-            args=[prompt, channel, "claude-3-7-sonnet-20250219"]
+            args=[LLMInput(prompt=prompt, channel=channel, model="claude-3-7-sonnet-20250219")],
         )
     )
     
     # Wait for both tasks to complete
-    final_output = await listener_task
     result = await workflow_task
+    _ = await listener_task
     
     print(f"\nWorkflow execution complete. Result length: {len(result)} characters")
 

@@ -9,7 +9,7 @@ with workflow.unsafe.imports_passed_through():
 @workflow.defn
 class LLMStreamingWorkflow:
     @workflow.run
-    async def run(self, prompt: str, channel: str, model: str = "claude-3-7-sonnet-20250219") -> str:
+    async def run(self, llm_input: LLMInput) -> str:
         """
         Execute the LLM streaming workflow.
         
@@ -24,6 +24,6 @@ class LLMStreamingWorkflow:
         # Execute the activity
         return await workflow.execute_activity(
             streamed_llm_activity,
-            LLMInput(prompt=prompt, channel=channel, model=model),
+            llm_input,
             start_to_close_timeout=timedelta(minutes=5),
         )

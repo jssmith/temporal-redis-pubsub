@@ -1,8 +1,9 @@
-from temporalio import activity
-import redis.asyncio as redis
-import os
 import json
-import asyncio
+import os
+
+import redis.asyncio as redis
+from temporalio import activity
+
 from shared import LLMInput
 
 @activity.defn
