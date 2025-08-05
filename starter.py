@@ -100,9 +100,13 @@ async def main():
         )
     )
     
-    # Wait for both tasks to complete
+    # Wait for either task to complete (prevents deadlock)
+    done, pending = await asyncio.wait(
+        [listener_task, workflow_task], return_when=asyncio.FIRST_COMPLETED
+    )
+
+    # Get the workflow result
     result = await workflow_task
-    _ = await listener_task
     
     print(f"\nWorkflow execution complete. Result length: {len(result)} characters")
 
