@@ -49,8 +49,9 @@ async def listen_to_pubsub(channel: str):
                     if "chunk" in data:
                         chunk = data["chunk"]
                         # Print the chunk without any carriage returns
-                        print(chunk, end="", flush=True)
-                        
+                        for char in chunk:
+                            print(char, end="", flush=True)
+                            await asyncio.sleep(.01)
                         # Check for completion
                         if data.get("is_final", False):
                             print("\n" + "-" * 40)
